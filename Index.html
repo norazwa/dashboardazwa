@@ -1,0 +1,1093 @@
+<!DOCTYPE html>
+<html lang="ms" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Analitik Kebolehpasaran Graduan Malaysia (GEAR)</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts - Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Lucide Icons (Alternatif kepada font-awesome, lebih moden) -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- Tailwind Custom Configuration & Styles -->
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        'premium': '0 10px 30px -10px rgba(0, 0, 0, 0.04)',
+                        'premium-dark': '0 10px 30px -10px rgba(0, 0, 0, 0.4)',
+                        'glow-primary': '0 0 20px rgba(99, 102, 241, 0.15)',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        /* Custom scrollbar untuk dashboard tampak lebih kemas */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .dark ::-webkit-scrollbar-thumb {
+            background: #374151;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #E5E7EB;
+            border-radius: 10px;
+        }
+        /* Glassmorphism subtle effects */
+        .glass-card {
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+        }
+    </style>
+</head>
+<body class="bg-[#F8FAFC] text-[#0F172A] dark:bg-[#0B0F19] dark:text-[#F1F5F9] min-h-screen flex flex-col antialiased">
+
+    <!-- HEADER / NAVIGATION -->
+    <header class="sticky top-0 z-40 w-full border-b border-slate-200/80 dark:border-slate-800/80 bg-white/80 dark:bg-[#0B0F19]/80 backdrop-blur-md transition-colors duration-300">
+        <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+            <!-- Brand Logo & Title -->
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center text-white shadow-lg shadow-indigo-500/30">
+                    <i data-lucide="graduation-cap" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
+                        GEAR <span class="text-xs py-0.5 px-2 bg-indigo-100 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 font-semibold rounded-full">v2.1</span>
+                    </h1>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">Sistem Analitik Kebolehpasaran Graduan Malaysia</p>
+                </div>
+            </div>
+
+            <!-- Header Actions -->
+            <div class="flex items-center space-x-4">
+                <!-- Dropdown Pilih Tahun -->
+                <div class="relative">
+                    <label for="yearSelector" class="sr-only">Pilih Tahun</label>
+                    <div class="flex items-center bg-slate-100 dark:bg-slate-800 rounded-xl px-3 py-2 border border-transparent dark:border-slate-700/50 transition-all">
+                        <i data-lucide="calendar" class="w-4 h-4 mr-2 text-slate-500"></i>
+                        <select id="yearSelector" class="bg-transparent text-sm font-semibold text-slate-700 dark:text-slate-200 outline-none pr-6 cursor-pointer appearance-none">
+                            <option value="2025" selected>Tahun Graduasi: 2025</option>
+                            <option value="2024">Tahun Graduasi: 2024</option>
+                            <option value="2023">Tahun Graduasi: 2023</option>
+                        </select>
+                        <i data-lucide="chevron-down" class="w-4 h-4 text-slate-500 absolute right-3 pointer-events-none"></i>
+                    </div>
+                </div>
+
+                <!-- Dark Mode Toggle Button -->
+                <button id="themeToggleBtn" aria-label="Tukar Tema Warna" class="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all duration-200 flex items-center justify-center">
+                    <i id="themeToggleDarkIcon" data-lucide="moon" class="w-5 h-5 hidden"></i>
+                    <i id="themeToggleLightIcon" data-lucide="sun" class="w-5 h-5 hidden"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN CONTAINER -->
+    <main class="flex-grow max-w-[1600px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+        
+        <!-- INTRO & LAST UPDATED BANNER -->
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-gradient-to-r from-indigo-50 to-indigo-100/50 dark:from-slate-900/50 dark:to-indigo-950/20 p-6 rounded-2xl border border-indigo-100/50 dark:border-indigo-950/50">
+            <div>
+                <h2 class="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">Selamat Datang ke Dashboard Kebolehpasaran</h2>
+                <p class="text-sm text-slate-600 dark:text-slate-400 mt-1">Gambaran komprehensif prestasi kebolehpasaran graduan dari universiti utama Malaysia.</p>
+            </div>
+            <div class="flex items-center gap-2 self-start md:self-auto bg-white dark:bg-slate-800/80 px-4 py-2 rounded-xl shadow-sm border border-slate-200/50 dark:border-slate-700/50 text-xs font-semibold text-slate-500 dark:text-slate-400">
+                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                Kemas Kini Terkini: Real-time (JSON)
+            </div>
+        </div>
+
+        <!-- KPI CARDS SECTION -->
+        <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6" aria-label="KPI Ringkasan">
+            
+            <!-- Card 1: Purata Kebolehpasaran Keseluruhan -->
+            <div class="bg-white dark:bg-[#111827] p-6 rounded-2xl border border-slate-100 dark:border-slate-800/60 shadow-premium dark:shadow-premium-dark hover:border-indigo-500/20 transition-all duration-300 group">
+                <div class="flex justify-between items-start">
+                    <div class="space-y-2">
+                        <p class="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">Purata Kebolehpasaran</p>
+                        <h3 id="kpiAvgGE" class="text-3xl font-extrabold text-slate-950 dark:text-white tracking-tight">--%</h3>
+                    </div>
+                    <div class="p-3 bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 rounded-xl group-hover:scale-110 transition-transform duration-300">
+                        <i data-lucide="percent" class="w-6 h-6"></i>
+                    </div>
+                </div>
+                <div class="mt-4 flex items-center space-x-1 text-xs">
+                    <span class="text-emerald-500 font-bold flex items-center gap-0.5">
+                        <i data-lucide="trending-up" class="w-3.5 h-3.5"></i> +2.4%
+                    </span>
+                    <span class="text-slate-400 dark:text-slate-500">berbanding tahun lepas</span>
+                </div>
+            </div>
+
+            <!-- Card 2: Jumlah Graduan Terlibat -->
+            <div class="bg-white dark:bg-[#111827] p-6 rounded-2xl border border-slate-100 dark:border-slate-800/60 shadow-premium dark:shadow-premium-dark hover:border-emerald-500/20 transition-all duration-300 group">
+                <div class="flex justify-between items-start">
+                    <div class="space-y-2">
+                        <p class="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">Jumlah Graduan</p>
+                        <h3 id="kpiTotalGrads" class="text-3xl font-extrabold text-slate-950 dark:text-white tracking-tight">--</h3>
+                    </div>
+                    <div class="p-3 bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 rounded-xl group-hover:scale-110 transition-transform duration-300">
+                        <i data-lucide="users" class="w-6 h-6"></i>
+                    </div>
+                </div>
+                <div class="mt-4 flex items-center space-x-1 text-xs">
+                    <span class="text-emerald-500 font-bold flex items-center gap-0.5">
+                        <i data-lucide="trending-up" class="w-3.5 h-3.5"></i> +1.8%
+                    </span>
+                    <span class="text-slate-400 dark:text-slate-500">kemasukan pasaran kerja</span>
+                </div>
+            </div>
+
+            <!-- Card 3: Universiti Terbaik -->
+            <div class="bg-white dark:bg-[#111827] p-6 rounded-2xl border border-slate-100 dark:border-slate-800/60 shadow-premium dark:shadow-premium-dark hover:border-amber-500/20 transition-all duration-300 group">
+                <div class="flex justify-between items-start">
+                    <div class="space-y-2">
+                        <p class="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">Universiti Terbaik</p>
+                        <h3 id="kpiBestUni" class="text-xl font-bold text-slate-950 dark:text-white tracking-tight truncate max-w-[180px] lg:max-w-[150px] xl:max-w-[180px]">--</h3>
+                    </div>
+                    <div class="p-3 bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 rounded-xl group-hover:scale-110 transition-transform duration-300">
+                        <i data-lucide="award" class="w-6 h-6"></i>
+                    </div>
+                </div>
+                <div class="mt-4 flex items-center justify-between text-xs">
+                    <span class="text-slate-400 dark:text-slate-500">Kadar Kebolehpasaran</span>
+                    <span id="kpiBestUniVal" class="text-amber-500 font-bold">--%</span>
+                </div>
+            </div>
+
+            <!-- Card 4: Bidang Terbaik -->
+            <div class="bg-white dark:bg-[#111827] p-6 rounded-2xl border border-slate-100 dark:border-slate-800/60 shadow-premium dark:shadow-premium-dark hover:border-rose-500/20 transition-all duration-300 group">
+                <div class="flex justify-between items-start">
+                    <div class="space-y-2">
+                        <p class="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">Bidang Terbaik</p>
+                        <h3 id="kpiBestField" class="text-xl font-bold text-slate-950 dark:text-white tracking-tight truncate max-w-[180px] lg:max-w-[150px] xl:max-w-[180px]">--</h3>
+                    </div>
+                    <div class="p-3 bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 rounded-xl group-hover:scale-110 transition-transform duration-300">
+                        <i data-lucide="briefcase" class="w-6 h-6"></i>
+                    </div>
+                </div>
+                <div class="mt-4 flex items-center justify-between text-xs">
+                    <span class="text-slate-400 dark:text-slate-500">Kadar Kebolehpasaran</span>
+                    <span id="kpiBestFieldVal" class="text-rose-500 font-bold">--%</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- VISUALIZATION SECTION: CHARTS -->
+        <section class="grid grid-cols-1 lg:grid-cols-3 gap-8" aria-label="Visualisasi Data">
+            
+            <!-- Chart 1: Bar Chart (Perbandingan Universiti) -->
+            <div class="lg:col-span-2 bg-white dark:bg-[#111827] p-6 rounded-2xl border border-slate-100 dark:border-slate-800/60 shadow-premium dark:shadow-premium-dark flex flex-col justify-between">
+                <div class="flex items-center justify-between mb-6">
+                    <div>
+                        <h3 class="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                            <i data-lucide="bar-chart-3" class="w-4 h-4 text-indigo-500"></i>
+                            Kebolehpasaran Mengikut Universiti (%)
+                        </h3>
+                        <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">Perbandingan peratusan kebiasaan graduan mendapat pekerjaan.</p>
+                    </div>
+                </div>
+                <div class="relative w-full h-[320px]">
+                    <canvas id="uniBarChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Chart 2: Donut Chart (Kebolehpasaran Mengikut Bidang) -->
+            <div class="bg-white dark:bg-[#111827] p-6 rounded-2xl border border-slate-100 dark:border-slate-800/60 shadow-premium dark:shadow-premium-dark flex flex-col justify-between">
+                <div class="flex items-center justify-between mb-6">
+                    <div>
+                        <h3 class="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                            <i data-lucide="pie-chart" class="w-4 h-4 text-rose-500"></i>
+                            Pecahan Mengikut Bidang (%)
+                        </h3>
+                        <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">Purata kadar kebolehpasaran mengikut industri.</p>
+                    </div>
+                </div>
+                <div class="relative w-full h-[320px] flex items-center justify-center">
+                    <canvas id="fieldDonutChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Chart 3: Line Chart (Trend Kebolehpasaran 5 Tahun) - Menyeberangi 3 Lajur -->
+            <div class="lg:col-span-3 bg-white dark:bg-[#111827] p-6 rounded-2xl border border-slate-100 dark:border-slate-800/60 shadow-premium dark:shadow-premium-dark flex flex-col justify-between">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                    <div>
+                        <h3 class="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                            <i data-lucide="line-chart" class="w-4 h-4 text-emerald-500"></i>
+                            Trend Kebolehpasaran Multi-Tahun (2021 - 2025)
+                        </h3>
+                        <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">Prestasi jangka panjang kebolehpasaran setiap universiti.</p>
+                    </div>
+                    <!-- Legend interaktif (custom CSS/JS) -->
+                    <div class="flex flex-wrap gap-3 text-xs" id="customLegendContainer"></div>
+                </div>
+                <div class="relative w-full h-[340px]">
+                    <canvas id="trendLineChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- DATA TABLE SECTION -->
+        <section class="bg-white dark:bg-[#111827] rounded-2xl border border-slate-100 dark:border-slate-800/60 shadow-premium dark:shadow-premium-dark overflow-hidden" aria-label="Jadual Data Universiti">
+            <!-- Table Header -->
+            <div class="p-6 border-b border-slate-100 dark:border-slate-800/60 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div>
+                    <h3 class="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                        <i data-lucide="table" class="w-4 h-4 text-indigo-500"></i>
+                        Perincian Data Universiti Utama
+                    </h3>
+                    <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">Senarai terperinci mengikut prestasi dan klasifikasi kebolehpasaran.</p>
+                </div>
+                <!-- Search bar dalam jadual -->
+                <div class="relative max-w-xs w-full">
+                    <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
+                    <input type="text" id="tableSearch" placeholder="Cari universiti..." class="w-full text-xs bg-slate-50 dark:bg-slate-800/50 pl-9 pr-4 py-2.5 rounded-xl border border-slate-200/50 dark:border-slate-700/50 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-600 focus:border-transparent transition-all">
+                </div>
+            </div>
+
+            <!-- Table Responsive Container -->
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-slate-50/50 dark:bg-slate-800/20 text-slate-400 dark:text-slate-500 text-[11px] font-bold uppercase tracking-wider border-b border-slate-100 dark:border-slate-800/60">
+                            <th class="py-4 px-6">Nama Universiti</th>
+                            <th class="py-4 px-6 text-center">Singkatan</th>
+                            <th class="py-4 px-6 text-right">Bil. Graduan</th>
+                            <th class="py-4 px-6 text-right">Kadar Kebolehpasaran</th>
+                            <th class="py-4 px-6">Graf Kemajuan</th>
+                            <th class="py-4 px-6 text-center">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="uniTableBody" class="divide-y divide-slate-100 dark:divide-slate-800/40 text-sm">
+                        <!-- Dimasukkan secara dinamik oleh JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Table Footer info -->
+            <div class="p-4 bg-slate-50/30 dark:bg-slate-800/10 border-t border-slate-100 dark:border-slate-800/60 flex items-center justify-between text-xs text-slate-400 dark:text-slate-500">
+                <span id="tableShowingText">Menunjukkan 5 rekod universiti utama</span>
+                <span class="font-semibold text-indigo-500">Kementerian Pendidikan Tinggi (KPT)</span>
+            </div>
+        </section>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="mt-auto border-t border-slate-200/50 dark:border-slate-800/50 bg-white dark:bg-[#0B0F19] transition-colors duration-300">
+        <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <p class="text-xs text-slate-400 dark:text-slate-500 text-center sm:text-left">
+                &copy; 2026 GEAR (Sistem Kebolehpasaran Graduan). Dibangunkan untuk tujuan analitik dan perancangan strategik.
+            </p>
+            <div class="flex items-center space-x-6 text-xs text-slate-400 dark:text-slate-500">
+                <a href="#" class="hover:text-indigo-500 transition-colors">Dasar Privasi</a>
+                <a href="#" class="hover:text-indigo-500 transition-colors">Terma Penggunaan</a>
+                <a href="#" class="hover:text-indigo-500 transition-colors flex items-center gap-1">
+                    <i data-lucide="help-circle" class="w-3.5 h-3.5"></i> Hubungi Kami
+                </a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        // -------------------------------------------------------------
+        // LANGKAH 1 - DATA DUMMY JSON REALISTIK
+        // -------------------------------------------------------------
+        const datasetKebolehpasaran = {
+            "2025": [
+                {
+                    "id": "UM",
+                    "nama": "Universiti Malaya",
+                    "singkatan": "UM",
+                    "bilGraduan": 4850,
+                    "kadarKebolehpasaran": 96.2,
+                    "bidang": {
+                        "Teknologi Maklumat": 98.4,
+                        "Kejuruteraan": 96.8,
+                        "Perniagaan": 95.5,
+                        "Sains Sosial": 93.2,
+                        "Sains Kesihatan": 97.1
+                    },
+                    "trend": [94.5, 95.1, 95.8, 96.0, 96.2] // 2021 hingga 2025
+                },
+                {
+                    "id": "UKM",
+                    "nama": "Universiti Kebangsaan Malaysia",
+                    "singkatan": "UKM",
+                    "bilGraduan": 4320,
+                    "kadarKebolehpasaran": 91.8,
+                    "bidang": {
+                        "Teknologi Maklumat": 94.2,
+                        "Kejuruteraan": 92.5,
+                        "Perniagaan": 91.0,
+                        "Sains Sosial": 88.5,
+                        "Sains Kesihatan": 93.0
+                    },
+                    "trend": [88.9, 90.1, 90.5, 91.2, 91.8]
+                },
+                {
+                    "id": "USM",
+                    "nama": "Universiti Sains Malaysia",
+                    "singkatan": "USM",
+                    "bilGraduan": 4560,
+                    "kadarKebolehpasaran": 93.5,
+                    "bidang": {
+                        "Teknologi Maklumat": 96.5,
+                        "Kejuruteraan": 95.0,
+                        "Perniagaan": 92.8,
+                        "Sains Sosial": 90.2,
+                        "Sains Kesihatan": 94.1
+                    },
+                    "trend": [91.2, 91.8, 92.4, 93.0, 93.5]
+                },
+                {
+                    "id": "UPM",
+                    "nama": "Universiti Putra Malaysia",
+                    "singkatan": "UPM",
+                    "bilGraduan": 4120,
+                    "kadarKebolehpasaran": 90.7,
+                    "bidang": {
+                        "Teknologi Maklumat": 93.0,
+                        "Kejuruteraan": 91.2,
+                        "Perniagaan": 90.5,
+                        "Sains Sosial": 87.8,
+                        "Sains Kesihatan": 91.0
+                    },
+                    "trend": [88.5, 89.2, 89.9, 90.2, 90.7]
+                },
+                {
+                    "id": "UTM",
+                    "nama": "Universiti Teknologi Malaysia",
+                    "singkatan": "UTM",
+                    "bilGraduan": 3950,
+                    "kadarKebolehpasaran": 94.8,
+                    "bidang": {
+                        "Teknologi Maklumat": 97.9,
+                        "Kejuruteraan": 96.5,
+                        "Perniagaan": 92.0,
+                        "Sains Sosial": 85.2,
+                        "Sains Kesihatan": 92.5
+                    },
+                    "trend": [92.0, 93.1, 93.8, 94.2, 94.8]
+                }
+            ],
+            "2024": [
+                {
+                    "id": "UM",
+                    "nama": "Universiti Malaya",
+                    "singkatan": "UM",
+                    "bilGraduan": 4720,
+                    "kadarKebolehpasaran": 96.0,
+                    "bidang": {
+                        "Teknologi Maklumat": 98.0,
+                        "Kejuruteraan": 96.2,
+                        "Perniagaan": 95.0,
+                        "Sains Sosial": 93.0,
+                        "Sains Kesihatan": 96.8
+                    },
+                    "trend": [94.5, 95.1, 95.8, 96.0, 96.2]
+                },
+                {
+                    "id": "UKM",
+                    "nama": "Universiti Kebangsaan Malaysia",
+                    "singkatan": "UKM",
+                    "bilGraduan": 4210,
+                    "kadarKebolehpasaran": 91.2,
+                    "bidang": {
+                        "Teknologi Maklumat": 93.5,
+                        "Kejuruteraan": 91.8,
+                        "Perniagaan": 90.2,
+                        "Sains Sosial": 87.9,
+                        "Sains Kesihatan": 92.4
+                    },
+                    "trend": [88.9, 90.1, 90.5, 91.2, 91.8]
+                },
+                {
+                    "id": "USM",
+                    "nama": "Universiti Sains Malaysia",
+                    "singkatan": "USM",
+                    "bilGraduan": 4450,
+                    "kadarKebolehpasaran": 93.0,
+                    "bidang": {
+                        "Teknologi Maklumat": 95.8,
+                        "Kejuruteraan": 94.2,
+                        "Perniagaan": 92.0,
+                        "Sains Sosial": 89.5,
+                        "Sains Kesihatan": 93.5
+                    },
+                    "trend": [91.2, 91.8, 92.4, 93.0, 93.5]
+                },
+                {
+                    "id": "UPM",
+                    "nama": "Universiti Putra Malaysia",
+                    "singkatan": "UPM",
+                    "bilGraduan": 3980,
+                    "kadarKebolehpasaran": 90.2,
+                    "bidang": {
+                        "Teknologi Maklumat": 92.2,
+                        "Kejuruteraan": 90.5,
+                        "Perniagaan": 89.8,
+                        "Sains Sosial": 87.2,
+                        "Sains Kesihatan": 90.5
+                    },
+                    "trend": [88.5, 89.2, 89.9, 90.2, 90.7]
+                },
+                {
+                    "id": "UTM",
+                    "nama": "Universiti Teknologi Malaysia",
+                    "singkatan": "UTM",
+                    "bilGraduan": 3820,
+                    "kadarKebolehpasaran": 94.2,
+                    "bidang": {
+                        "Teknologi Maklumat": 97.2,
+                        "Kejuruteraan": 95.8,
+                        "Perniagaan": 91.2,
+                        "Sains Sosial": 84.8,
+                        "Sains Kesihatan": 91.8
+                    },
+                    "trend": [92.0, 93.1, 93.8, 94.2, 94.8]
+                }
+            ],
+            "2023": [
+                {
+                    "id": "UM",
+                    "nama": "Universiti Malaya",
+                    "singkatan": "UM",
+                    "bilGraduan": 4600,
+                    "kadarKebolehpasaran": 95.8,
+                    "bidang": {
+                        "Teknologi Maklumat": 97.5,
+                        "Kejuruteraan": 95.9,
+                        "Perniagaan": 94.8,
+                        "Sains Sosial": 92.5,
+                        "Sains Kesihatan": 96.5
+                    },
+                    "trend": [94.5, 95.1, 95.8, 96.0, 96.2]
+                },
+                {
+                    "id": "UKM",
+                    "nama": "Universiti Kebangsaan Malaysia",
+                    "singkatan": "UKM",
+                    "bilGraduan": 4150,
+                    "kadarKebolehpasaran": 90.5,
+                    "bidang": {
+                        "Teknologi Maklumat": 93.0,
+                        "Kejuruteraan": 91.0,
+                        "Perniagaan": 89.5,
+                        "Sains Sosial": 87.0,
+                        "Sains Kesihatan": 92.0
+                    },
+                    "trend": [88.9, 90.1, 90.5, 91.2, 91.8]
+                },
+                {
+                    "id": "USM",
+                    "nama": "Universiti Sains Malaysia",
+                    "singkatan": "USM",
+                    "bilGraduan": 4300,
+                    "kadarKebolehpasaran": 92.4,
+                    "bidang": {
+                        "Teknologi Maklumat": 95.2,
+                        "Kejuruteraan": 93.8,
+                        "Perniagaan": 91.5,
+                        "Sains Sosial": 89.0,
+                        "Sains Kesihatan": 92.8
+                    },
+                    "trend": [91.2, 91.8, 92.4, 93.0, 93.5]
+                },
+                {
+                    "id": "UPM",
+                    "nama": "Universiti Putra Malaysia",
+                    "singkatan": "UPM",
+                    "bilGraduan": 3890,
+                    "kadarKebolehpasaran": 89.9,
+                    "bidang": {
+                        "Teknologi Maklumat": 91.8,
+                        "Kejuruteraan": 90.1,
+                        "Perniagaan": 89.2,
+                        "Sains Sosial text": 86.8,
+                        "Sains Kesihatan": 89.8
+                    },
+                    "trend": [88.5, 89.2, 89.9, 90.2, 90.7]
+                },
+                {
+                    "id": "UTM",
+                    "nama": "Universiti Teknologi Malaysia",
+                    "singkatan": "UTM",
+                    "bilGraduan": 3750,
+                    "kadarKebolehpasaran": 93.8,
+                    "bidang": {
+                        "Teknologi Maklumat": 96.8,
+                        "Kejuruteraan": 95.2,
+                        "Perniagaan": 90.8,
+                        "Sains Sosial": 84.0,
+                        "Sains Kesihatan": 91.2
+                    },
+                    "trend": [92.0, 93.1, 93.8, 94.2, 94.8]
+                }
+            ]
+        };
+
+        // -------------------------------------------------------------
+        // INSTAN & CACHE ELEMEN DOM & CARTA GLOBAL
+        // -------------------------------------------------------------
+        let currentYear = "2025";
+        let uniBarChartInstance = null;
+        let fieldDonutChartInstance = null;
+        let trendLineChartInstance = null;
+
+        // Dom Elements
+        const kpiAvgGE = document.getElementById('kpiAvgGE');
+        const kpiTotalGrads = document.getElementById('kpiTotalGrads');
+        const kpiBestUni = document.getElementById('kpiBestUni');
+        const kpiBestUniVal = document.getElementById('kpiBestUniVal');
+        const kpiBestField = document.getElementById('kpiBestField');
+        const kpiBestFieldVal = document.getElementById('kpiBestFieldVal');
+        const uniTableBody = document.getElementById('uniTableBody');
+        const tableSearch = document.getElementById('tableSearch');
+        const yearSelector = document.getElementById('yearSelector');
+
+        // Theme Switcher Elements
+        const themeToggleBtn = document.getElementById('themeToggleBtn');
+        const themeToggleDarkIcon = document.getElementById('themeToggleDarkIcon');
+        const themeToggleLightIcon = document.getElementById('themeToggleLightIcon');
+
+        // -------------------------------------------------------------
+        // PENGURUSAN TEMA (LIGHT/DARK MODE)
+        // -------------------------------------------------------------
+        function initTheme() {
+            // Semak status local storage atau pilihan sistem operasi pengguna
+            if (localStorage.getItem('color-theme') === 'dark' || 
+                (!('color-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+                themeToggleLightIcon.classList.remove('hidden');
+            } else {
+                document.documentElement.classList.remove('dark');
+                themeToggleDarkIcon.classList.remove('hidden');
+            }
+        }
+
+        themeToggleBtn.addEventListener('click', function() {
+            // Toggle ikon secara visual
+            themeToggleDarkIcon.classList.toggle('hidden');
+            themeToggleLightIcon.classList.toggle('hidden');
+
+            // Toggle kelas 'dark' pada tag html
+            if (document.documentElement.classList.contains('dark')) {
+                document.documentElement.classList.remove('dark');
+                localStorage.setItem('color-theme', 'light');
+            } else {
+                document.documentElement.classList.add('dark');
+                localStorage.setItem('color-theme', 'dark');
+            }
+
+            // Kemas kini reka bentuk warna carta mengikut tema baharu
+            updateChartsTheme();
+        });
+
+        // -------------------------------------------------------------
+        // LANGKAH 5 - PENGIRAAN KPI DINAMIK (DARI JSON)
+        // -------------------------------------------------------------
+        function hitungKpi(data) {
+            let totalGrads = 0;
+            let totalPercentageSum = 0;
+            let bestUni = data[0];
+            
+            // Pengiraan pecahan bidang merentasi semua universiti
+            const bidangKeys = ["Teknologi Maklumat", "Kejuruteraan", "Perniagaan", "Sains Sosial", "Sains Kesihatan"];
+            let bidangSum = {};
+            bidangKeys.forEach(b => bidangSum[b] = { total: 0, count: 0 });
+
+            data.forEach(uni => {
+                totalGrads += uni.bilGraduan;
+                totalPercentageSum += uni.kadarKebolehpasaran;
+                
+                if (uni.kadarKebolehpasaran > bestUni.kadarKebolehpasaran) {
+                    bestUni = uni;
+                }
+
+                // Tambah data bidang
+                bidangKeys.forEach(b => {
+                    if (uni.bidang[b] !== undefined) {
+                        bidangSum[b].total += uni.bidang[b];
+                        bidangSum[b].count += 1;
+                    }
+                });
+            });
+
+            const avgGE = (totalPercentageSum / data.length).toFixed(1);
+            
+            // Cari bidang terbaik
+            let bestField = "";
+            let bestFieldAvg = 0;
+            bidangKeys.forEach(b => {
+                const avg = bidangSum[b].total / bidangSum[b].count;
+                if (avg > bestFieldAvg) {
+                    bestFieldAvg = avg;
+                    bestField = b;
+                }
+            });
+
+            // Kemas kini UI KPI secara visual dengan transisi yang menarik
+            kpiAvgGE.innerText = `${avgGE}%`;
+            kpiTotalGrads.innerText = totalGrads.toLocaleString('ms-MY');
+            kpiBestUni.innerText = bestUni.singkatan;
+            kpiBestUni.title = bestUni.nama;
+            kpiBestUniVal.innerText = `${bestUni.kadarKebolehpasaran}%`;
+            kpiBestField.innerText = bestField;
+            kpiBestFieldVal.innerText = `${bestFieldAvg.toFixed(1)}%`;
+        }
+
+        // -------------------------------------------------------------
+        // VISUALISASI DATA - PERSATUAN CARTA CHART.JS
+        // -------------------------------------------------------------
+
+        // Konfigurasi Asas Gaya Mengikut Tema (Dark / Light)
+        function getChartColors() {
+            const isDark = document.documentElement.classList.contains('dark');
+            return {
+                text: isDark ? '#9CA3AF' : '#64748B',
+                grid: isDark ? 'rgba(55, 65, 81, 0.4)' : 'rgba(226, 232, 240, 0.6)',
+                tooltipBg: isDark ? '#1F2937' : '#FFFFFF',
+                tooltipBorder: isDark ? '#374151' : '#E2E8F0',
+                tooltipText: isDark ? '#F9FAFB' : '#0F172A',
+            };
+        }
+
+        // KEMAS KINI TEMA CARTA SECARA DINAMIK APABILA TOGGLE KLIK
+        function updateChartsTheme() {
+            const colors = getChartColors();
+            const configObjects = [uniBarChartInstance, fieldDonutChartInstance, trendLineChartInstance];
+            
+            configObjects.forEach(chart => {
+                if (chart) {
+                    // Update Axis Colors (Jika berkenaan)
+                    if (chart.options.scales) {
+                        if (chart.options.scales.x) {
+                            chart.options.scales.x.grid.color = colors.grid;
+                            chart.options.scales.x.ticks.color = colors.text;
+                        }
+                        if (chart.options.scales.y) {
+                            chart.options.scales.y.grid.color = colors.grid;
+                            chart.options.scales.y.ticks.color = colors.text;
+                        }
+                    }
+                    // Update Tooltip Styling
+                    if (chart.options.plugins && chart.options.plugins.tooltip) {
+                        chart.options.plugins.tooltip.backgroundColor = colors.tooltipBg;
+                        chart.options.plugins.tooltip.borderColor = colors.tooltipBorder;
+                        chart.options.plugins.tooltip.titleColor = colors.tooltipText;
+                        chart.options.plugins.tooltip.bodyColor = colors.tooltipText;
+                    }
+                    chart.update();
+                }
+            });
+        }
+
+        // CARTA 1: BAR CHART (KADAR KEBOLEHPASARAN UNIVERSITI)
+        function binaBarChart(data) {
+            const ctx = document.getElementById('uniBarChart').getContext('2d');
+            const labels = data.map(uni => uni.singkatan);
+            const values = data.map(uni => uni.kadarKebolehpasaran);
+            const colors = getChartColors();
+
+            // Gradient fill untuk bar yang kelihatan premium
+            const gradientIndigo = ctx.createLinearGradient(0, 0, 0, 300);
+            gradientIndigo.addColorStop(0, 'rgba(99, 102, 241, 0.95)'); // Indigo 500
+            gradientIndigo.addColorStop(1, 'rgba(99, 102, 241, 0.25)');
+
+            const hoverGradient = ctx.createLinearGradient(0, 0, 0, 300);
+            hoverGradient.addColorStop(0, 'rgba(79, 70, 229, 0.95)'); // Indigo 600
+            hoverGradient.addColorStop(1, 'rgba(79, 70, 229, 0.4)');
+
+            if (uniBarChartInstance) {
+                uniBarChartInstance.destroy();
+            }
+
+            uniBarChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Kebolehpasaran (%)',
+                        data: values,
+                        backgroundColor: gradientIndigo,
+                        hoverBackgroundColor: hoverGradient,
+                        borderColor: '#6366F1',
+                        borderWidth: 1.5,
+                        borderRadius: 10,
+                        borderSkipped: false,
+                        barThickness: 32,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: colors.tooltipBg,
+                            borderColor: colors.tooltipBorder,
+                            borderWidth: 1,
+                            titleColor: colors.tooltipText,
+                            bodyColor: colors.tooltipText,
+                            padding: 12,
+                            cornerRadius: 12,
+                            callbacks: {
+                                label: function(context) {
+                                    return ` Kebolehpasaran: ${context.parsed.y}%`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: colors.text, font: { family: 'Inter', size: 11, weight: '500' } }
+                        },
+                        y: {
+                            min: 50,
+                            max: 100,
+                            grid: { color: colors.grid, drawBorder: false },
+                            ticks: { color: colors.text, stepSize: 10, font: { family: 'Inter', size: 11 } }
+                        }
+                    }
+                }
+            });
+        }
+
+        // CARTA 2: DONUT CHART (PECAHAN MENGIKUT BIDANG)
+        function binaDonutChart(data) {
+            const ctx = document.getElementById('fieldDonutChart').getContext('2d');
+            const colors = getChartColors();
+            
+            // Pengiraan purata kadar kebolehpasaran setiap bidang daripada data JSON
+            const bidangKeys = ["Teknologi Maklumat", "Kejuruteraan", "Perniagaan", "Sains Sosial", "Sains Kesihatan"];
+            let totals = { "Teknologi Maklumat": 0, "Kejuruteraan": 0, "Perniagaan": 0, "Sains Sosial": 0, "Sains Kesihatan": 0 };
+            
+            data.forEach(uni => {
+                bidangKeys.forEach(b => {
+                    totals[b] += uni.bidang[b];
+                });
+            });
+
+            const averages = bidangKeys.map(b => (totals[b] / data.length).toFixed(1));
+
+            if (fieldDonutChartInstance) {
+                fieldDonutChartInstance.destroy();
+            }
+
+            // Warna tersuai moden untuk setiap pecahan bidang
+            const paletteModen = [
+                '#6366F1', // Indigo (IT)
+                '#10B981', // Emerald (Kejuruteraan)
+                '#F59E0B', // Amber (Perniagaan)
+                '#EC4899', // Pink/Rose (Sains Sosial)
+                '#06B6D4'  // Cyan (Sains Kesihatan)
+            ];
+
+            fieldDonutChartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: bidangKeys,
+                    datasets: [{
+                        data: averages,
+                        backgroundColor: paletteModen,
+                        borderWidth: 0,
+                        hoverOffset: 12
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '72%',
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: colors.text,
+                                font: { family: 'Inter', size: 11, weight: '500' },
+                                boxWidth: 12,
+                                padding: 16
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: colors.tooltipBg,
+                            borderColor: colors.tooltipBorder,
+                            borderWidth: 1,
+                            titleColor: colors.tooltipText,
+                            bodyColor: colors.tooltipText,
+                            padding: 12,
+                            cornerRadius: 12,
+                            callbacks: {
+                                label: function(context) {
+                                    return ` Purata Kebolehpasaran: ${context.formattedValue}%`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // CARTA 3: LINE CHART (TREND KEBOLEHPASARAN MULTI-TAHUN)
+        function binaTrendLineChart(data) {
+            const ctx = document.getElementById('trendLineChart').getContext('2d');
+            const colors = getChartColors();
+            const tahunLabels = ['2021', '2022', '2023', '2024', '2025'];
+            
+            const lineColors = {
+                'UM': '#6366F1',  // Indigo
+                'UKM': '#F59E0B', // Amber
+                'USM': '#10B981', // Emerald
+                'UPM': '#EC4899', // Rose
+                'UTM': '#06B6D4'  // Cyan
+            };
+
+            const datasets = data.map(uni => {
+                return {
+                    label: uni.nama,
+                    shortLabel: uni.singkatan,
+                    data: uni.trend,
+                    borderColor: lineColors[uni.id] || '#64748B',
+                    backgroundColor: 'transparent',
+                    borderWidth: 3,
+                    pointBackgroundColor: lineColors[uni.id] || '#64748B',
+                    pointBorderColor: '#ffffff',
+                    pointBorderWidth: 2,
+                    pointRadius: 5,
+                    pointHoverRadius: 8,
+                    tension: 0.35, // Membuat lengkungan garisan lebih lembut/smooth
+                };
+            });
+
+            if (trendLineChartInstance) {
+                trendLineChartInstance.destroy();
+            }
+
+            trendLineChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: tahunLabels,
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false // Kita akan gunakan legenda tersuai di luar
+                        },
+                        tooltip: {
+                            backgroundColor: colors.tooltipBg,
+                            borderColor: colors.tooltipBorder,
+                            borderWidth: 1,
+                            titleColor: colors.tooltipText,
+                            bodyColor: colors.tooltipText,
+                            padding: 12,
+                            cornerRadius: 12,
+                            callbacks: {
+                                label: function(context) {
+                                    return ` ${context.dataset.shortLabel}: ${context.parsed.y}%`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { color: colors.grid, drawBorder: false },
+                            ticks: { color: colors.text, font: { family: 'Inter', size: 11, weight: '500' } }
+                        },
+                        y: {
+                            min: 80,
+                            max: 100,
+                            grid: { color: colors.grid, drawBorder: false },
+                            ticks: { color: colors.text, stepSize: 5, font: { family: 'Inter', size: 11 } }
+                        }
+                    }
+                }
+            });
+
+            // Jana legenda tersuai untuk kawalan UI yang lebih bersih
+            binaLegendaTersuai(datasets);
+        }
+
+        // Legenda Tersuai dengan kebolehan interaktif untuk sembunyi/pamer garisan trend
+        function binaLegendaTersuai(datasets) {
+            const container = document.getElementById('customLegendContainer');
+            container.innerHTML = ''; // Kosongkan legenda lama
+
+            datasets.forEach((dataset, index) => {
+                const legendItem = document.createElement('button');
+                legendItem.className = 'flex items-center space-x-2 px-3 py-1.5 rounded-lg border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/30 hover:bg-slate-100 dark:hover:bg-slate-800/70 transition-all text-xs font-semibold text-slate-700 dark:text-slate-300';
+                legendItem.innerHTML = `
+                    <span class="w-3 h-3 rounded-full inline-block" style="background-color: ${dataset.borderColor}"></span>
+                    <span>${dataset.shortLabel}</span>
+                `;
+
+                legendItem.addEventListener('click', () => {
+                    const isVisible = trendLineChartInstance.isDatasetVisible(index);
+                    if (isVisible) {
+                        trendLineChartInstance.hide(index);
+                        legendItem.style.opacity = '0.4';
+                    } else {
+                        trendLineChartInstance.show(index);
+                        legendItem.style.opacity = '1';
+                    }
+                });
+
+                container.appendChild(legendItem);
+            });
+        }
+
+        // -------------------------------------------------------------
+        // BINA JADUAL DATA UTAMA
+        // -------------------------------------------------------------
+        function binaJadual(data, penapisCarian = "") {
+            uniTableBody.innerHTML = '';
+            
+            // Tapis data mengikut input carian pengguna
+            const dataDitapis = data.filter(uni => 
+                uni.nama.toLowerCase().includes(penapisCarian.toLowerCase()) ||
+                uni.singkatan.toLowerCase().includes(penapisCarian.toLowerCase())
+            );
+
+            // Jika tiada hasil ditemui
+            if (dataDitapis.length === 0) {
+                uniTableBody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="py-8 text-center text-slate-400 dark:text-slate-500">
+                            <div class="flex flex-col items-center justify-center space-y-2">
+                                <i data-lucide="search-off" class="w-8 h-8 text-slate-300 dark:text-slate-600"></i>
+                                <p class="text-sm">Tiada universiti ditemui padanan "${penapisCarian}"</p>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                // Refresh ikon yang baharu dibina dinamik
+                lucide.createIcons();
+                return;
+            }
+
+            dataDitapis.forEach(uni => {
+                const ge = uni.kadarKebolehpasaran;
+                
+                // Penetapan Status berasaskan Standard Kebolehpasaran
+                let statusBadge = '';
+                let textClass = '';
+                
+                if (ge >= 95.0) {
+                    statusBadge = '<span class="px-2.5 py-1 text-[11px] font-bold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 rounded-full border border-emerald-200 dark:border-emerald-800/30">Cemerlang</span>';
+                } else if (ge >= 90.0) {
+                    statusBadge = '<span class="px-2.5 py-1 text-[11px] font-bold bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 rounded-full border border-indigo-200 dark:border-indigo-800/30">Sangat Baik</span>';
+                } else {
+                    statusBadge = '<span class="px-2.5 py-1 text-[11px] font-bold bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 rounded-full border border-amber-200 dark:border-amber-800/30">Memuaskan</span>';
+                }
+
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-all duration-150 border-b border-slate-100 dark:border-slate-800/40';
+                tr.innerHTML = `
+                    <td class="py-4 px-6 font-semibold text-slate-900 dark:text-white">
+                        <div class="flex flex-col">
+                            <span>${uni.nama}</span>
+                            <span class="text-[11px] font-normal text-slate-400 dark:text-slate-500">Malaysia</span>
+                        </div>
+                    </td>
+                    <td class="py-4 px-6 text-center">
+                        <span class="text-xs font-bold text-slate-500 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-md border border-slate-200/40 dark:border-slate-700/40">${uni.singkatan}</span>
+                    </td>
+                    <td class="py-4 px-6 text-right font-medium text-slate-700 dark:text-slate-300">
+                        ${uni.bilGraduan.toLocaleString('ms-MY')}
+                    </td>
+                    <td class="py-4 px-6 text-right font-bold text-indigo-600 dark:text-indigo-400">
+                        ${ge}%
+                    </td>
+                    <td class="py-4 px-6 min-w-[140px]">
+                        <div class="flex items-center space-x-2">
+                            <!-- Visual Progress Bar -->
+                            <div class="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2">
+                                <div class="bg-gradient-to-r from-indigo-500 to-indigo-600 h-2 rounded-full shadow-glow-primary" style="width: ${ge}%"></div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="py-4 px-6 text-center">
+                        ${statusBadge}
+                    </td>
+                `;
+                uniTableBody.appendChild(tr);
+            });
+
+            // Kemas kini teks bilangan paparan rekod
+            document.getElementById('tableShowingText').innerText = `Menunjukkan ${dataDitapis.length} daripada ${data.length} rekod universiti`;
+            
+            // Kemas kini ikon Lucide
+            lucide.createIcons();
+        }
+
+        // -------------------------------------------------------------
+        // INTERAKTIVITI & PENDENGAR ACARA (EVENT LISTENERS)
+        // -------------------------------------------------------------
+
+        // Menapis/Carian Nama Universiti dalam Jadual
+        tableSearch.addEventListener('input', (e) => {
+            const dataSiriTahun = datasetKebolehpasaran[currentYear];
+            binaJadual(dataSiriTahun, e.target.value);
+        });
+
+        // Menukar Tahun Menggunakan Dropdown Selektor
+        yearSelector.addEventListener('change', (e) => {
+            currentYear = e.target.value;
+            const dataSiriTahun = datasetKebolehpasaran[currentYear];
+            
+            // Kira semula statistik & kemas kini carta berasaskan tahun baharu
+            hitungKpi(dataSiriTahun);
+            binaBarChart(dataSiriTahun);
+            binaDonutChart(dataSiriTahun);
+            binaTrendLineChart(dataSiriTahun);
+            binaJadual(dataSiriTahun, tableSearch.value);
+        });
+
+        // -------------------------------------------------------------
+        // ARAHAN PENYEDIAAN AWAL (INITIALIZATION)
+        // -------------------------------------------------------------
+        window.addEventListener('DOMContentLoaded', () => {
+            // Pasang ikon Lucide
+            lucide.createIcons();
+            
+            // Inisialisasi Tema
+            initTheme();
+
+            // Pemuatan set data tahun terkini secara lalai (2025)
+            const dataAwal = datasetKebolehpasaran[currentYear];
+            
+            hitungKpi(dataAwal);
+            binaBarChart(dataAwal);
+            binaDonutChart(dataAwal);
+            binaTrendLineChart(dataAwal);
+            binaJadual(dataAwal);
+        });
+    </script>
+</body>
+</html>
